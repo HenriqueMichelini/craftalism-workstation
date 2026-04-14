@@ -39,6 +39,7 @@ The workstation separates policy from command logic.
 - `policy/generated-files.sh` defines blocked staged-file patterns and safe exceptions.
 - `policy/reading-order.sh` defines the required governance reading order.
 - `policy/release.sh`, `policy/ci.sh`, and `policy/compatibility.sh` are intentionally honest scaffolds for incomplete release governance.
+- `policy/ci.sh` now maps known repo workflow files so release-oriented commands can report concrete local CI coverage without inventing branch-protection or required-check policy.
 
 ## Governance Alignment
 
@@ -58,6 +59,7 @@ The reading order starts at the root governance docs under `$HOME/IdeaProjects/c
 ## Known Policy Gaps
 
 - CI workflow mappings and required status-check names are not configured.
+- Some workflow files are now mapped, but branch protection and required-check enforcement still cannot be derived locally.
 - The compatibility matrix exists, but the workstation does not infer release approval from its contents beyond basic presence and repo listing checks.
 - Release policy inputs beyond local docs and local verify proof are not yet defined.
 - `craftalism` and `craftalism-deployment` intentionally report manual verification gaps instead of pretending automation exists.

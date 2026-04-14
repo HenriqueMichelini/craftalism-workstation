@@ -16,8 +16,8 @@
 
 - Contract change checks print the real root checklist when present.
 - Tagging checks stop after local gates and report document presence plus missing CI and release policy mappings.
-- Release checks report local readiness, root release-governance document presence, latest release audit status, and remaining governance gaps.
-- Platform status reports local repo state plus root release-governance document presence without claiming release readiness.
+- Release checks report local readiness, root release-governance document presence, mapped CI workflow status, latest release audit status, and remaining governance gaps.
+- Platform status reports local repo state plus mapped CI workflow status and root release-governance document presence without claiming release readiness.
 
 ## Remaining Governance Dependencies
 

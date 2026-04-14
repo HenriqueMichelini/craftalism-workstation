@@ -10,6 +10,7 @@ fi
 tag="$1"
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${root}/lib/common.sh"
+source "${root}/lib/ci.sh"
 source "${root}/lib/repo.sh"
 source "${root}/lib/git.sh"
 source "${root}/lib/verify.sh"
@@ -19,6 +20,7 @@ source "${root}/policy/ci.sh"
 source "${root}/policy/release.sh"
 
 repo_name="$(current_repo_name)"
+repo_root="$(current_repo_root)"
 require_managed_repo
 repo_is_taggable "${repo_name}" || die "repo '${repo_name}' is not taggable"
 [[ "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "tag must match v<major>.<minor>.<patch>"
@@ -46,6 +48,9 @@ if [[ -f "${ci_standard_path}" ]]; then
 else
   echo "policy gap: missing CI standard at ${ci_standard_path}"
 fi
+
+echo "quality workflow: $(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
+echo "release workflow: $(repo_release_workflow_status "${repo_root}" "${repo_name}")"
 
 latest_audit="$(latest_release_audit_path || true)"
 if [[ -n "${latest_audit}" ]]; then

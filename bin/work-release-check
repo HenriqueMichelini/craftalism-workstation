@@ -4,6 +4,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${root}/lib/common.sh"
+source "${root}/lib/ci.sh"
 source "${root}/lib/repo.sh"
 source "${root}/lib/docs.sh"
 source "${root}/lib/verify.sh"
@@ -43,6 +44,9 @@ if [[ -f "${ci_standard_path}" ]]; then
 else
   print_kv "ci standard" "missing"
 fi
+
+print_kv "quality workflow" "$(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
+print_kv "release workflow" "$(repo_release_workflow_status "${repo_root}" "${repo_name}")"
 
 if [[ -n "${latest_audit}" ]]; then
   print_kv "release audit" "$(latest_release_audit_verdict || echo unknown) ${latest_audit}"

@@ -15,7 +15,7 @@ root_ci_standard_relative_path() {
 }
 
 release_policy_missing_inputs() {
-  printf '%s\n' "CI workflow mapping is not configured yet."
+  printf '%s\n' "CI workflow mapping is incomplete for some repos."
   printf '%s\n' "Required status check names are not configured yet."
   printf '%s\n' "Tag-to-compatibility release update workflow is not configured yet."
 }

@@ -4,6 +4,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${root}/lib/common.sh"
+source "${root}/lib/ci.sh"
 source "${root}/lib/release.sh"
 source "${root}/policy/repos.sh"
 source "${root}/policy/release.sh"
@@ -32,7 +33,8 @@ for repo in "${repos[@]}"; do
     sha="$(git -C "${repo_dir}" rev-parse --short HEAD 2>/dev/null || echo unborn)"
     tree="clean"
     [[ -n "$(git -C "${repo_dir}" status --porcelain)" ]] && tree="dirty"
-    print_kv "${repo}" "${branch} ${sha} ${tree}"
+    quality_status="$(repo_quality_workflow_status "${repo_dir}" "${repo}")"
+    print_kv "${repo}" "${branch} ${sha} ${tree} ci=${quality_status}"
   else
     print_kv "${repo}" "directory exists but is not a git repo"
   fi
