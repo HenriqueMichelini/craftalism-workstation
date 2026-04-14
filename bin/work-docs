@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/repo.sh"
+source "${root}/lib/docs.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+echo "reading order for ${repo_name}:"
+print_repo_reading_order "${repo_name}" "${repo_root}"

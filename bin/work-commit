@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "usage: work-commit \"<type>(<scope>): <summary>\"" >&2
+  exit 1
+fi
+
+message="$1"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/git.sh"
+source "${root}/lib/docs.sh"
+source "${root}/policy/commit.sh"
+source "${root}/policy/generated-files.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+commit_message_is_valid "${repo_name}" "${message}" || die "$(commit_validation_error "${repo_name}" "${message}")"
+
+missing_docs="$(repo_required_docs_missing "${repo_root}" "${repo_name}")"
+if [[ -n "${missing_docs}" ]]; then
+  echo "required docs missing:" >&2
+  while IFS= read -r line; do
+    [[ -n "${line}" ]] && echo "${line}" >&2
+  done <<< "${missing_docs}"
+  exit 1
+fi
+
+(
+  cd "${repo_root}"
+  if [[ "$(git_current_branch)" != "main" ]]; then
+    die "work-commit requires branch 'main' because it pushes main"
+  fi
+
+  git add .
+
+  staged_files="$(git_staged_files || true)"
+  [[ -n "${staged_files}" ]] || die "no staged files after git add ."
+
+  blocked=()
+  while IFS= read -r file; do
+    [[ -n "${file}" ]] || continue
+    if is_allowed_generated_exception "${file}"; then
+      continue
+    fi
+    while IFS= read -r pattern; do
+      [[ -n "${pattern}" ]] || continue
+      if [[ "${file}" =~ ${pattern} ]]; then
+        blocked+=("${file}")
+        break
+      fi
+    done < <(blocked_stage_pattern)
+  done <<< "${staged_files}"
+
+  if [[ ${#blocked[@]} -gt 0 ]]; then
+    printf 'blocked staged files:\n' >&2
+    printf '%s\n' "${blocked[@]}" >&2
+    exit 1
+  fi
+
+  git_has_staged_changes || die "staged diff is empty"
+  git commit -m "${message}"
+  git push origin main
+)

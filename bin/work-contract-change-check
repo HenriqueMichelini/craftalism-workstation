@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+expected="${HOME}/IdeaProjects/craftalism/docs/contract-change-checklist.md"
+
+if [[ -f "${expected}" ]]; then
+  echo "contract change checklist: ${expected}"
+  sed -n '1,160p' "${expected}"
+else
+  echo "policy gap: missing root contract change checklist"
+  echo "expected: ${expected}"
+fi

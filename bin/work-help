@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cat <<'EOF'
+Craftalism workstation commands
+
+Implemented now:
+  work-status                  Show repo status, docs state, and verification state
+  work-context                 Show repo role, ownership, contracts, and verify mode
+  work-ownership-check         Explain repo boundaries and handoff points
+  work-docs                    Print governance-aware reading order
+  work-audit-pack              Print a Codex-ready governance audit pack
+  work-checklist               Print implementation and reverification checklist
+  work-commit "<message>"      Validate, stage, block unsafe files, commit, and push main
+  work-verify                  Run configured local verification or report policy gap
+  work-help                    Show this help
+  work-version                 Print workstation version
+  work-doctor                  Check workstation environment and repo detection
+
+Scaffolded:
+  work-contract-change-check   Root checklist reference or honest policy-gap message
+  work-tag                     Local tag gate plus policy-gap reporting for missing release inputs
+  work-release-check           Local release scaffold plus missing policy inputs
+  work-platform-status         Cross-repo local status scaffold under ~/IdeaProjects
+EOF

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/git.sh"
+source "${root}/lib/docs.sh"
+source "${root}/lib/verify.sh"
+source "${root}/policy/repos.sh"
+source "${root}/policy/verify.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+branch="$(git_current_branch)"
+head_sha="$(git_short_head_sha)"
+tree_state="$(git_tree_state)"
+docs_state="$(repo_docs_state "${repo_root}" "${repo_name}")"
+verify_mode="$(repo_verify_mode "${repo_name}")"
+verify_state="$(verify_state_for_head "${repo_name}")"
+deployable="no"
+taggable="no"
+
+repo_is_deployable "${repo_name}" && deployable="yes"
+repo_is_taggable "${repo_name}" && taggable="yes"
+
+print_kv "repo" "${repo_name}"
+print_kv "role" "$(repo_role "${repo_name}")"
+print_kv "scope" "$(repo_scope "${repo_name}")"
+print_kv "branch" "${branch}"
+print_kv "head" "${head_sha:-unborn}"
+print_kv "tree state" "${tree_state}"
+print_kv "docs state" "${docs_state}"
+print_kv "verify state" "${verify_state} (${verify_mode})"
+print_kv "deployable" "${deployable}"
+print_kv "taggable" "${taggable}"
+
+missing_docs="$(repo_required_docs_missing "${repo_root}" "${repo_name}")"
+if [[ -n "${missing_docs}" ]]; then
+  echo
+  echo "missing required docs:"
+  while IFS= read -r line; do
+    [[ -n "${line}" ]] || continue
+    echo "- ${line}"
+  done <<< "${missing_docs}"
+fi

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/doctor.sh"
+
+workstation_root_value="${CRAFTALISM_WORKSTATION_ROOT:-missing}"
+path_state="missing"
+case ":${PATH}:" in
+  *":${root}/bin:"*) path_state="ok" ;;
+esac
+
+state_dir="$(default_state_dir)"
+state_writable="no"
+if [[ -d "${state_dir}" ]]; then
+  [[ -w "${state_dir}" ]] && state_writable="yes"
+elif [[ -d "$(dirname "${state_dir}")" && -w "$(dirname "${state_dir}")" ]]; then
+  state_writable="yes"
+fi
+
+print_kv "workstation root env" "${workstation_root_value}"
+print_kv "path setup" "${path_state}"
+print_kv "git" "$(has_command git && echo available || echo missing)"
+print_kv "gh" "$(gh_status)"
+print_kv "state dir" "${state_dir}"
+print_kv "state writable" "${state_writable}"
+print_kv "repo detection" "$(doctor_current_repo_status)"
+
+if ! has_command gh; then
+  echo "note: gh is optional, but release-oriented commands will need it once policy is mapped."
+fi

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/docs.sh"
+source "${root}/lib/verify.sh"
+source "${root}/policy/release.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+print_kv "repo" "${repo_name}"
+print_kv "docs state" "$(repo_docs_state "${repo_root}" "${repo_name}")"
+print_kv "verify proof" "$(verify_state_for_head "${repo_name}")"
+echo "missing release policy inputs:"
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && echo "- ${line}"
+done < <(release_policy_missing_inputs)

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/policy/repos.sh"
+source "${root}/policy/contracts.sh"
+source "${root}/policy/verify.sh"
+
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+owned_contracts=()
+consumed_contracts=()
+critical_rules=()
+
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && owned_contracts+=("${line}")
+done < <(repo_owned_contracts "${repo_name}" || true)
+
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && consumed_contracts+=("${line}")
+done < <(repo_consumed_contracts "${repo_name}" || true)
+
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && critical_rules+=("${line}")
+done < <(repo_critical_rules "${repo_name}" || true)
+
+print_kv "repo" "${repo_name}"
+print_kv "role" "$(repo_role "${repo_name}")"
+print_kv "primary mode" "$(repo_primary_mode "${repo_name}")"
+print_kv "verification mode" "$(repo_verify_mode "${repo_name}")"
+print_kv "owned contracts" "$(join_by ', ' "${owned_contracts[@]:-none}")"
+print_kv "consumed contracts" "$(join_by ', ' "${consumed_contracts[@]:-none}")"
+echo "critical rules:"
+for rule in "${critical_rules[@]:-}"; do
+  [[ -n "${rule}" ]] || continue
+  echo "- ${rule}"
+done

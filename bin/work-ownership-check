@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/policy/contracts.sh"
+
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+owned=()
+consumed=()
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && owned+=("${line}")
+done < <(repo_owned_contracts "${repo_name}" || true)
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && consumed+=("${line}")
+done < <(repo_consumed_contracts "${repo_name}" || true)
+
+echo "ownership boundary for ${repo_name}:"
+if [[ ${#owned[@]} -gt 0 ]]; then
+  echo "This repo owns: $(join_by ', ' "${owned[@]}")."
+else
+  echo "This repo does not own shared contract definitions."
+fi
+
+if [[ ${#consumed[@]} -gt 0 ]]; then
+  echo "This repo consumes: $(join_by ', ' "${consumed[@]}")."
+fi
+
+echo "This repo must not redefine shared contracts it only consumes."
+
+case "${repo_name}" in
+  craftalism)
+    echo "Move work to an owning service repo when changing canonical behavior."
+    ;;
+  craftalism-dashboard|craftalism-economy|craftalism-market)
+    echo "Move work to the contract-owning repo when behavior, route, or issuer semantics need to change."
+    ;;
+  craftalism-infra)
+    echo "Move work to deployment for runtime composition changes and to service repos for application behavior changes."
+    ;;
+  craftalism-deployment)
+    echo "Move work to owning service repos when canonical contract semantics, routes, or issuer behavior must change."
+    ;;
+  craftalism-api|craftalism-authorization-server)
+    echo "Move work to other repos when the change is only consumer adaptation, display behavior, or infrastructure exposure."
+    ;;
+esac

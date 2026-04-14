@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "usage: work-tag <tag>" >&2
+  exit 1
+fi
+
+tag="$1"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/git.sh"
+source "${root}/lib/verify.sh"
+source "${root}/policy/repos.sh"
+source "${root}/policy/ci.sh"
+source "${root}/policy/release.sh"
+
+repo_name="$(current_repo_name)"
+require_managed_repo
+repo_is_taggable "${repo_name}" || die "repo '${repo_name}' is not taggable"
+[[ "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "tag must match v<major>.<minor>.<patch>"
+[[ "$(git_current_branch)" == "main" ]] || die "tagging requires branch main"
+[[ "$(git_tree_state)" == "clean" ]] || die "tagging requires a clean tree"
+git_head_is_pushed_to_origin_main || die "HEAD is not pushed to origin/main"
+[[ "$(verify_state_for_head "${repo_name}")" == "verified" ]] || die "local verify proof for HEAD is required"
+
+echo "local tag gates passed for ${tag}"
+echo "$(ci_policy_status)"
+echo "$(release_policy_gap_message)"
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && echo "- ${line}"
+done < <(release_policy_missing_inputs)
+exit 1

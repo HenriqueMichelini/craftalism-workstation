@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/policy/repos.sh"
+source "${root}/policy/release.sh"
+
+base="${HOME}/IdeaProjects"
+repos=(
+  craftalism
+  craftalism-api
+  craftalism-authorization-server
+  craftalism-dashboard
+  craftalism-deployment
+  craftalism-economy
+  craftalism-infra
+  craftalism-market
+)
+
+for repo in "${repos[@]}"; do
+  repo_dir="${base}/${repo}"
+  if [[ ! -d "${repo_dir}" ]]; then
+    print_kv "${repo}" "missing locally"
+    continue
+  fi
+
+  if git -C "${repo_dir}" rev-parse --show-toplevel >/dev/null 2>&1; then
+    branch="$(git -C "${repo_dir}" symbolic-ref --quiet --short HEAD 2>/dev/null || echo unborn)"
+    sha="$(git -C "${repo_dir}" rev-parse --short HEAD 2>/dev/null || echo unborn)"
+    tree="clean"
+    [[ -n "$(git -C "${repo_dir}" status --porcelain)" ]] && tree="dirty"
+    print_kv "${repo}" "${branch} ${sha} ${tree}"
+  else
+    print_kv "${repo}" "directory exists but is not a git repo"
+  fi
+done
+
+echo "release policy status: $(release_policy_gap_message)"

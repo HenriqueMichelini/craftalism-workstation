@@ -1,0 +1,1 @@
+Audit this Craftalism repo in governance order. State ownership versus consumption first, then assess implementation and docs against shared contracts, shared standards, system summary, repo-local control docs, and any audit artifacts.

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/repo.sh"
+source "${root}/policy/contracts.sh"
+source "${root}/policy/verify.sh"
+
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+echo "implementation checklist:"
+echo "- Confirm the repo owns or consumes the behavior before editing."
+echo "- Read governance docs in workstation reading order."
+echo "- Avoid redefining shared contracts in consumer repos."
+echo "- Keep repo-local docs aligned with actual repo behavior."
+echo
+echo "reverify checklist:"
+echo "- Re-run the repo verification path after changes."
+echo "- Re-check ownership boundaries if a contract-facing change was made."
+echo "- Confirm required docs still exist and still match the implementation."
+echo
+echo "contract reminders:"
+owned_items=()
+consumed_items=()
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && owned_items+=("${line}")
+done < <(repo_owned_contracts "${repo_name}" || true)
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && consumed_items+=("${line}")
+done < <(repo_consumed_contracts "${repo_name}" || true)
+echo "- Owned: $(join_by ', ' "${owned_items[@]:-none}")"
+echo "- Consumed: $(join_by ', ' "${consumed_items[@]:-none}")"
+echo
+echo "verification expectation:"
+mode="$(repo_verify_mode "${repo_name}")"
+if [[ "${mode}" == "automated" ]]; then
+  while IFS= read -r cmd; do
+    [[ -n "${cmd}" ]] && echo "- ${cmd}"
+  done < <(repo_verify_commands "${repo_name}")
+else
+  echo "- Automated local verification is not yet defined for this repo."
+fi

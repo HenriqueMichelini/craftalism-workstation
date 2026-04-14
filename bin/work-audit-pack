@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/docs.sh"
+source "${root}/policy/repos.sh"
+source "${root}/policy/contracts.sh"
+source "${root}/policy/verify.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+echo "repo: ${repo_name}"
+echo "role: $(repo_role "${repo_name}")"
+echo "scope: $(repo_scope "${repo_name}")"
+echo
+echo "governance precedence:"
+echo "1. shared contracts"
+echo "2. shared standards"
+echo "3. system summary"
+echo "4. repo-local docs/repo-contract-map.md"
+echo "5. repo-local docs/repo-requirement-pack.md"
+echo "6. point-in-time audit artifacts"
+echo
+echo "reading order:"
+print_repo_reading_order "${repo_name}" "${repo_root}"
+echo
+echo "ownership summary:"
+owned_items=()
+consumed_items=()
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && owned_items+=("${line}")
+done < <(repo_owned_contracts "${repo_name}" || true)
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && consumed_items+=("${line}")
+done < <(repo_consumed_contracts "${repo_name}" || true)
+echo "owned: $(join_by ', ' "${owned_items[@]:-none}")"
+echo "consumed: $(join_by ', ' "${consumed_items[@]:-none}")"
+echo
+echo "critical rules:"
+rules="$(repo_critical_rules "${repo_name}" || true)"
+if [[ -n "${rules}" ]]; then
+  while IFS= read -r rule; do
+    [[ -n "${rule}" ]] && echo "- ${rule}"
+  done <<< "${rules}"
+else
+  echo "- No repo-specific critical rule text is configured."
+fi
+echo
+echo "verification:"
+mode="$(repo_verify_mode "${repo_name}")"
+echo "mode: ${mode}"
+if [[ "${mode}" == "automated" ]]; then
+  while IFS= read -r cmd; do
+    [[ -n "${cmd}" ]] && echo "- ${cmd}"
+  done < <(repo_verify_commands "${repo_name}")
+else
+  echo "- Automated local verification is not yet defined for this repo."
+fi
+echo
+echo "codex prompt:"
+cat <<EOF
+Review ${repo_name} using Craftalism governance precedence. Determine whether this repo owns or consumes the behavior you are inspecting before proposing changes. Read documents in the workstation reading order, do not redefine shared contracts locally in consumer repos, and report policy gaps explicitly instead of speculating.
+EOF

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/lib/repo.sh"
+source "${root}/lib/verify.sh"
+source "${root}/policy/verify.sh"
+
+repo_root="$(current_repo_root)"
+repo_name="$(current_repo_name)"
+require_managed_repo
+
+mode="$(repo_verify_mode "${repo_name}")"
+print_kv "repo" "${repo_name}"
+print_kv "verify mode" "${mode}"
+
+if [[ "${mode}" == "manual-policy-gap" ]]; then
+  echo "Automated local verification is not yet defined for ${repo_name}."
+  exit 0
+fi
+
+commands=()
+while IFS= read -r line; do
+  [[ -n "${line}" ]] && commands+=("${line}")
+done < <(repo_verify_commands "${repo_name}")
+
+[[ ${#commands[@]} -gt 0 ]] || die "no verification commands configured"
+
+for cmd in "${commands[@]}"; do
+  echo "running: ${cmd}"
+  run_verify_command "${repo_root}" "${cmd}"
+done
+
+write_verify_success "${repo_name}" "$(join_by ' && ' "${commands[@]}")"
+echo "verification proof stored at $(verify_state_file "${repo_name}" "$(git_head_sha)")"
