@@ -8,4 +8,4 @@ case ":${PATH}:" in
 esac
 
 export CRAFTALISM_WORKSTATION_ROOT="${WORKSTATION_ROOT}"
-export WORKSTATION_STATE_DIR="${HOME}/.workstation/state"
+export WORKSTATION_STATE_DIR="${WORKSTATION_STATE_DIR:-${HOME}/.workstation/state}"
