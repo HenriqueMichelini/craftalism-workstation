@@ -40,13 +40,14 @@ else
 fi
 
 if [[ -f "${ci_standard_path}" ]]; then
-  print_kv "ci standard" "present"
+print_kv "ci standard" "present"
 else
   print_kv "ci standard" "missing"
 fi
 
 print_kv "quality workflow" "$(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
 print_kv "release workflow" "$(repo_release_workflow_status "${repo_root}" "${repo_name}")"
+print_kv "ci release summary" "$(repo_ci_release_summary "${repo_root}" "${repo_name}")"
 
 if [[ -n "${latest_audit}" ]]; then
   print_kv "release audit" "$(latest_release_audit_verdict || echo unknown) ${latest_audit}"

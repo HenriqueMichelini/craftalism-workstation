@@ -65,6 +65,17 @@ repo_release_job_hint() {
   esac
 }
 
+repo_release_forbidden_pattern() {
+  case "$1" in
+    craftalism-api|craftalism-authorization-server|craftalism-dashboard|craftalism-economy)
+      echo "-x test"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 ci_policy_status() {
   echo "policy gap: required status check names and branch protection enforcement are not configured yet"
 }

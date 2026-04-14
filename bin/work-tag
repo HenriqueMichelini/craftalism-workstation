@@ -51,6 +51,7 @@ fi
 
 echo "quality workflow: $(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
 echo "release workflow: $(repo_release_workflow_status "${repo_root}" "${repo_name}")"
+echo "ci release summary: $(repo_ci_release_summary "${repo_root}" "${repo_name}")"
 
 latest_audit="$(latest_release_audit_path || true)"
 if [[ -n "${latest_audit}" ]]; then
