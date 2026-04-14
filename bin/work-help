@@ -19,8 +19,8 @@ Implemented now:
   work-doctor                  Check workstation environment and repo detection
 
 Scaffolded:
-  work-contract-change-check   Root checklist reference or honest policy-gap message
-  work-tag                     Local tag gate plus policy-gap reporting for missing release inputs
-  work-release-check           Local release scaffold plus missing policy inputs
-  work-platform-status         Cross-repo local status scaffold under ~/IdeaProjects
+  work-contract-change-check   Print the root cross-repo contract change checklist when present
+  work-tag                     Structured tagged-release decision with local gates and governance context
+  work-release-check           Structured non-tagged release-readiness view with blocking reasons
+  work-platform-status         Cross-repo local status plus mapped CI coverage under ~/IdeaProjects
 EOF

@@ -27,6 +27,8 @@ Scaffolded with explicit policy-gap behavior:
 - `work-release-check`
 - `work-platform-status`
 
+The release-oriented commands are no longer placeholder-only. They now produce structured local readiness reports driven by real root governance docs and mapped repo workflow files, while still stopping at the boundaries of unknown branch-protection and required-check policy.
+
 ## Policy Model
 
 The workstation separates policy from command logic.

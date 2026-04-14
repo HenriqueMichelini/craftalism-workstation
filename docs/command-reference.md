@@ -34,9 +34,9 @@ source "$HOME/IdeaProjects/craftalism-workstation/install/work.sh"
 - `work-contract-change-check`
   Prints the real root contract change checklist from `craftalism/docs/standards/contract-change-checklist.md` when present.
 - `work-tag v1.2.3`
-  Enforces local tag gates, reports compatibility/CI document presence, then stops on unmapped CI and release policy gaps.
+  Prints a structured tagged-release decision block with local git gates, verify proof, compatibility and checklist presence, CI workflow posture, latest release audit status, policy gaps, and blocking reasons.
 - `work-release-check`
-  Checks docs, local verify proof, root release documents, mapped CI workflow presence, and latest release audit status, then reports missing release policy inputs.
+  Prints the same structured release-readiness posture as `work-tag`, without requiring a tag string, so you can inspect blockers before attempting a release tag.
 - `work-platform-status`
   Scans known repos under `~/IdeaProjects`, prints basic local git state plus mapped CI workflow status, and summarizes root release-governance document presence.
 
