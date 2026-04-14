@@ -12,7 +12,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${root}/lib/common.sh"
 source "${root}/lib/ci.sh"
 source "${root}/lib/repo.sh"
-source "${root}/lib/git.sh"
+source "${root}/lib/release_report.sh"
 source "${root}/lib/verify.sh"
 source "${root}/lib/release.sh"
 source "${root}/policy/repos.sh"
@@ -22,45 +22,51 @@ source "${root}/policy/release.sh"
 repo_name="$(current_repo_name)"
 repo_root="$(current_repo_root)"
 require_managed_repo
+latest_audit="$(latest_release_audit_path || true)"
+
 repo_is_taggable "${repo_name}" || die "repo '${repo_name}' is not taggable"
 [[ "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "tag must match v<major>.<minor>.<patch>"
-[[ "$(git_current_branch)" == "main" ]] || die "tagging requires branch main"
-[[ "$(git_tree_state)" == "clean" ]] || die "tagging requires a clean tree"
-git_head_is_pushed_to_origin_main || die "HEAD is not pushed to origin/main"
-[[ "$(verify_state_for_head "${repo_name}")" == "verified" ]] || die "local verify proof for HEAD is required"
+branch_state="$(release_gate_branch_state)"
+tree_state="$(release_gate_tree_state)"
+pushed_state="$(release_gate_pushed_state)"
+verify_state="$(release_gate_verify_state "${repo_name}")"
+compatibility_state="$(release_gate_compatibility_state "${repo_name}")"
+ci_standard_state="$(release_gate_ci_standard_state)"
+contract_checklist_state="$(release_gate_contract_checklist_state)"
+quality_workflow_state="$(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
+release_workflow_state="$(repo_release_workflow_status "${repo_root}" "${repo_name}")"
+ci_release_summary="$(repo_ci_release_summary "${repo_root}" "${repo_name}")"
+latest_audit_state="$(release_gate_audit_state)"
+decision="$(release_gate_decision "${branch_state}" "${tree_state}" "${pushed_state}" "${verify_state}" "${compatibility_state}" "${ci_standard_state}" "${contract_checklist_state}" "${ci_release_summary}" "${latest_audit_state}")"
+blocking_reasons="$(print_release_blocking_reasons "${branch_state}" "${tree_state}" "${pushed_state}" "${verify_state}" "${compatibility_state}" "${latest_audit_state}")"
 
-echo "local tag gates passed for ${tag}"
-compatibility_path="$(root_release_doc_path "$(root_compatibility_matrix_relative_path)")"
-ci_standard_path="$(root_release_doc_path "$(root_ci_standard_relative_path)")"
-
-if [[ -f "${compatibility_path}" ]]; then
-  if compatibility_matrix_mentions_repo "${repo_name}"; then
-    echo "compatibility matrix: present and lists ${repo_name}"
-  else
-    echo "compatibility matrix: present but does not list ${repo_name} explicitly"
-  fi
-else
-  echo "policy gap: missing compatibility matrix at ${compatibility_path}"
-fi
-
-if [[ -f "${ci_standard_path}" ]]; then
-  echo "ci standard: present at ${ci_standard_path}"
-else
-  echo "policy gap: missing CI standard at ${ci_standard_path}"
-fi
-
-echo "quality workflow: $(repo_quality_workflow_status "${repo_root}" "${repo_name}")"
-echo "release workflow: $(repo_release_workflow_status "${repo_root}" "${repo_name}")"
-echo "ci release summary: $(repo_ci_release_summary "${repo_root}" "${repo_name}")"
-
-latest_audit="$(latest_release_audit_path || true)"
+print_kv "tag" "${tag}"
+print_kv "repo" "${repo_name}"
+print_kv "branch gate" "${branch_state}"
+print_kv "tree gate" "${tree_state}"
+print_kv "pushed gate" "${pushed_state}"
+print_kv "verify gate" "${verify_state}"
+print_kv "compatibility" "${compatibility_state}"
+print_kv "ci standard" "${ci_standard_state}"
+print_kv "contract checklist" "${contract_checklist_state}"
+print_kv "quality workflow" "${quality_workflow_state}"
+print_kv "release workflow" "${release_workflow_state}"
+print_kv "ci release summary" "${ci_release_summary}"
 if [[ -n "${latest_audit}" ]]; then
-  echo "latest release audit: ${latest_audit} ($(latest_release_audit_verdict || echo unknown))"
+  print_kv "release audit" "${latest_audit_state} ${latest_audit}"
+else
+  print_kv "release audit" "${latest_audit_state}"
 fi
+print_kv "decision" "${decision}"
 
-echo "$(ci_policy_status)"
-echo "$(release_policy_gap_message)"
+echo "remaining policy gaps:"
 while IFS= read -r line; do
   [[ -n "${line}" ]] && echo "- ${line}"
 done < <(release_policy_missing_inputs)
-exit 1
+
+if [[ -n "${blocking_reasons}" ]]; then
+  echo "blocking reasons:"
+  printf '%s\n' "${blocking_reasons}"
+fi
+
+[[ "${decision}" == "ready-for-next-release-gate" ]] || exit 1
