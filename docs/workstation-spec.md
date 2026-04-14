@@ -57,8 +57,7 @@ The reading order starts at the root governance docs under `$HOME/IdeaProjects/c
 
 ## Known Policy Gaps
 
-- Root contract change checklist path is referenced, but its governing document is not yet guaranteed to exist.
 - CI workflow mappings and required status-check names are not configured.
-- Compatibility matrix contents are not configured.
+- The compatibility matrix exists, but the workstation does not infer release approval from its contents beyond basic presence and repo listing checks.
 - Release policy inputs beyond local docs and local verify proof are not yet defined.
 - `craftalism` and `craftalism-deployment` intentionally report manual verification gaps instead of pretending automation exists.

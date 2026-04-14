@@ -24,10 +24,10 @@
 ## Release-Oriented Dependencies
 
 - `work-contract-change-check`
-  Depends on a future root checklist document at `$HOME/IdeaProjects/craftalism/docs/contract-change-checklist.md`.
+  Depends on `$HOME/IdeaProjects/craftalism/docs/standards/contract-change-checklist.md`.
 - `work-tag`
-  Depends on local repo/tag gates now, and on future `policy/ci.sh` plus `policy/release.sh` completion for real release enforcement.
+  Depends on local repo/tag gates now, uses the root compatibility matrix and CI standard for context, and still depends on future `policy/ci.sh` plus `policy/release.sh` completion for real release enforcement.
 - `work-release-check`
-  Depends on local docs and verify state now, and on future release-policy completion for stronger gating.
+  Depends on local docs, verify state, the root compatibility matrix, the root CI standard, the root contract change checklist, and the latest release-readiness audit; it still depends on future release-policy completion for stronger gating.
 - `work-platform-status`
-  Depends on local repo presence under `~/IdeaProjects`; release-readiness details remain blocked on future governance mapping.
+  Depends on local repo presence under `~/IdeaProjects` and root release-governance documents; strong release-readiness details remain blocked on future governance mapping.

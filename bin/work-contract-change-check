@@ -2,11 +2,15 @@
 
 set -euo pipefail
 
-expected="${HOME}/IdeaProjects/craftalism/docs/contract-change-checklist.md"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${root}/lib/common.sh"
+source "${root}/policy/release.sh"
+
+expected="$(root_governance_dir)/$(root_contract_change_checklist_relative_path)"
 
 if [[ -f "${expected}" ]]; then
   echo "contract change checklist: ${expected}"
-  sed -n '1,160p' "${expected}"
+  sed -n '1,220p' "${expected}"
 else
   echo "policy gap: missing root contract change checklist"
   echo "expected: ${expected}"

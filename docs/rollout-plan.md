@@ -14,10 +14,10 @@
 
 ## Intentionally Scaffolded
 
-- Contract change checks only reference the expected root checklist and report a policy gap if missing.
-- Tagging checks stop after local gates and report missing CI and release policy mappings.
-- Release checks report local readiness plus missing governance inputs.
-- Platform status reports local repo state without claiming release readiness.
+- Contract change checks print the real root checklist when present.
+- Tagging checks stop after local gates and report document presence plus missing CI and release policy mappings.
+- Release checks report local readiness, root release-governance document presence, latest release audit status, and remaining governance gaps.
+- Platform status reports local repo state plus root release-governance document presence without claiming release readiness.
 
 ## Remaining Governance Dependencies
 

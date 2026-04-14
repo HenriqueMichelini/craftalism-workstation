@@ -4,6 +4,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${root}/lib/common.sh"
+source "${root}/lib/release.sh"
 source "${root}/policy/repos.sh"
 source "${root}/policy/release.sh"
 
@@ -37,4 +38,13 @@ for repo in "${repos[@]}"; do
   fi
 done
 
+compatibility_path="$(root_release_doc_path "$(root_compatibility_matrix_relative_path)")"
+ci_standard_path="$(root_release_doc_path "$(root_ci_standard_relative_path)")"
+echo "release policy inputs:"
+echo "- Compatibility matrix: $([[ -f "${compatibility_path}" ]] && echo present || echo missing)"
+echo "- CI standard: $([[ -f "${ci_standard_path}" ]] && echo present || echo missing)"
+latest_audit="$(latest_release_audit_path || true)"
+if [[ -n "${latest_audit}" ]]; then
+  echo "- Latest release audit: ${latest_audit} ($(latest_release_audit_verdict || echo unknown))"
+fi
 echo "release policy status: $(release_policy_gap_message)"

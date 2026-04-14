@@ -32,13 +32,13 @@ source "$HOME/IdeaProjects/craftalism-workstation/install/work.sh"
 ## Scaffold Commands
 
 - `work-contract-change-check`
-  References the expected root checklist or reports a policy gap.
+  Prints the real root contract change checklist from `craftalism/docs/standards/contract-change-checklist.md` when present.
 - `work-tag v1.2.3`
-  Enforces local tag gates, then stops on unmapped CI and release policy gaps.
+  Enforces local tag gates, reports compatibility/CI document presence, then stops on unmapped CI and release policy gaps.
 - `work-release-check`
-  Checks docs and local verify proof, then reports missing release policy inputs.
+  Checks docs, local verify proof, root release documents, and latest release audit status, then reports missing release policy inputs.
 - `work-platform-status`
-  Scans known repos under `~/IdeaProjects` and prints basic local git state.
+  Scans known repos under `~/IdeaProjects`, prints basic local git state, and summarizes root release-governance document presence.
 
 ## Examples
 
